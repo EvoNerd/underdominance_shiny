@@ -5,7 +5,7 @@ account: ahghenu
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14415318
-bundleId: 10046960
+bundleId: 10054390
 url: https://ahghenu.shinyapps.io/underdominance_shiny/
 version: 1
 asMultiple: FALSE
