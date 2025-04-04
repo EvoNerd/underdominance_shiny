@@ -148,16 +148,16 @@ server <- function(input, output){
       
       # simulate forward in time for each genotype
       temp_df <- data.frame(t = 1:gen, p_t = p_t)
-      temp_df <- rbind(cbind(temp_df, y=(1-temp_df$p_t)^2, Genotype = "genotype aa"),
-                       cbind(temp_df, y=2*temp_df$p_t*(1-temp_df$p_t), Genotype = "genotypes aA & Aa"),
-                       cbind(temp_df, y=temp_df$p_t^2, Genotype = "genotype AA"))
+      temp_df <- rbind(cbind(temp_df, y=(1-temp_df$p_t)^2, Genotype = "aa"),
+                       cbind(temp_df, y=2*temp_df$p_t*(1-temp_df$p_t), Genotype = "aA & Aa"),
+                       cbind(temp_df, y=temp_df$p_t^2, Genotype = "AA"))
       temp_df$Genotype <- factor(temp_df$Genotype,
-                                 levels = c("genotype aa", "genotypes aA & Aa", "genotype AA"))
+                                 levels = c("aa", "aA & Aa", "AA"))
         
       selected_plot <-  temp_df %>%
         ggplot(aes(x = t-1, y = y, colour=Genotype)) +
-        geom_point(size=1) +
-        scale_color_manual(values = c("genotype AA" = "firebrick", "genotypes aA & Aa" = "orange", "genotype aa" = "gold")) +
+        geom_point() +
+        scale_color_manual(values = c("AA" = "firebrick", "aA & Aa" = "orange", "aa" = "gold")) +
         labs(x= "Generation",y="Allele frequency, p",
              color = "Legend") +
         scale_x_continuous(expand = c(0, 0), limits = c(0, input$gen+2)) + 
@@ -165,8 +165,10 @@ server <- function(input, output){
         #        theme(panel.background =  
         #                element_rect(fill =  rgb(30, 144, 255, 25, 
         #                                         maxColorValue = 255)),
-        #              text = element_text(size=16, family= "Times"))
-        theme_classic()+theme(text = element_text(size=20))
+        #              text = element_text(size=16, family= "Times")) 
+        labs(colour = "Genotypes") +
+        theme_classic()+theme(text = element_text(size=20),
+                              legend.position="bottom")
     } else if(input$select == 5){
       p_t <- rep(NA, gen)
       W_t <- rep(NA, gen)
