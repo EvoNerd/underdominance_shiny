@@ -10,6 +10,17 @@
 library(tidyverse)
 library(patchwork) # for combining multiple plots into 1
 
+###################################
+# create necessary functions
+###################################
+
+
+
+
+###################################
+# make the R Shiny app
+###################################
+
 #user interface
 ui <- fluidPage(pageWithSidebar( 
   
@@ -22,7 +33,7 @@ ui <- fluidPage(pageWithSidebar(
          Fitness of Aa (wAa)= 1 - h_under</B>"),
 
     sliderInput(inputId = "h_under", label = "Underdominance coefficient (h_under)", value = -0.2, 
-                min = -1, max = 0, step = 0.01),
+                min = -1, max = 1, step = 0.1),
     
     sliderInput(inputId = "p_0", label = "Initial p", value = 0.32, 
                 min = 0, max = 1, step = 0.02),
@@ -39,8 +50,11 @@ ui <- fluidPage(pageWithSidebar(
     plotOutput(outputId = 'viz'),
     
     selectInput("select", label = "Plot options", 
-                choices = list("Mean fitness by p" = 1, "Change in p by p" = 2,
-                               "Allele frequency over time" = 3, "Genotypes over time" = 4, "Mean fitness over time" = 5), selected = 4)
+                choices = list("Mean fitness by p" = 1,
+                               "Change in p by p" = 2,
+                               "Allele frequency over time" = 3,
+                               "Genotypes over time" = 4,
+                               "Mean fitness over time" = 5), selected = 4)
     
     
   )
@@ -158,7 +172,7 @@ server <- function(input, output){
         ggplot(aes(x = t-1, y = y, colour=Genotype)) +
         geom_point() +
         scale_color_manual(values = c("AA" = "firebrick", "aA & Aa" = "orange", "aa" = "gold")) +
-        labs(x= "Generation",y="Allele frequency, p",
+        labs(x= "Generation",y="Genotype frequency",
              color = "Legend") +
         scale_x_continuous(expand = c(0, 0), limits = c(0, input$gen+2)) + 
         scale_y_continuous(expand = c(0, 0), limits = c(0, 1.01)) + 
