@@ -1,0 +1,115 @@
+---
+title: "Evolution with under (and over) dominance"
+author: "Hermina"
+Date: "2025-05-09"
+output:
+  html_document:
+    df_print: paged
+    code_folding: show
+    toc: true
+    toc_float:
+      smooth_scroll: false
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+library(tidyverse) # for ggplot and pipe syntax
+library(shiny) # for app
+library(patchwork) # for combining multiple plots into 1
+library(bslib) # for most recent recommended UI options
+
+# set the default plot style
+fave_theme <- theme_light() + # see other options at https://ggplot2.tidyverse.org/reference/ggtheme.html
+  theme(text = element_text(size=20), # larger text size for titles & axes
+        panel.grid.major = element_blank(), # remove major gridlines
+        panel.grid.minor = element_blank()) # remove minor gridlines
+theme_set(fave_theme)
+
+# increase the default thickness of lines for all geom objects in ggplot2
+update_geom_defaults("line", list(linewidth = 2.5, alpha=0.8))
+
+# define colour scheme for genotypes
+colours_genotypes <- c("AA" = "firebrick", "Aa" = "orange", "aA" = "orange", "aa" = "gold")
+```
+
+# Introduction
+
+The purpose of this R notebook is to facilitate development and debugging of the associated R Shiny app.
+
+A biallelic locus in a diploid organism with underdominance exhibits bistability.
+
+## Acknowledgements
+
+This R shiny code is modified from a similar app built by Silas Tittes [(available at this github link)](https://github.com/silastittes/shiny_popgen).
+
+# The model
+
+## The code
+
+```{r model_functions}
+#####################
+# simulation
+#####################
+
+# a function to get the fitness of the genotypes
+fitness_genotypes <- function(sel_coef, dom_coef)
+  return(c(aa = 1.0, aA = 1 + dom_coef, Aa = 1 + dom_coef, AA = 1 + sel_coef))
+
+# a function to get mean fitness of the population
+mean_fitness <- function(w_genotypes, freq){
+  output <- freq^2*w_genotypes["AA"] + 2*freq*(1-freq)*w_genotypes["Aa"] + (1-freq)^2*w_genotypes["aa"]
+  return(unname(output))
+}
+
+# a function to get the allele frequency in the next generation
+next_p <- function(w_AA, w_hetero, freq, W_bar){
+  output <- (freq^2*w_AA + freq*(1-freq)*w_hetero) / W_bar
+  return(unname(output))
+}
+
+# a function to simulate genotypes over time
+sim_forward_time <- function(num_gens, freq_init, w_genotypes){
+  # initialize data.frame for storage starting from initial allele frequencies at generation 0
+  df <- data.frame(gens = 0:num_gens,
+                   p = c(freq_init, rep(NA, num_gens)))
+  # loop through each generation
+  for(i in 2:nrow(df)){
+    W_bar <- mean_fitness(w_genotypes, df$p[i-1])
+    # use current mean fitness to get allele frequency in the next generation
+    df$p[i] <- next_p(w_genotypes["AA"], w_genotypes["Aa"], df$p[i-1], W_bar)
+  }
+  # finally, use the allele frequencies for each generation to get the genotypes
+  df <- df %>% mutate(aa = (1-p)^2,
+                      hetero = 2*p*(1-p),
+                      AA = p^2)
+  return(df)
+}
+
+#####################
+# visualization
+#####################
+
+# plot fitness of the genotypes
+plot_schematic <- function(w_genotypes) {
+    # create df for nice plotting
+    df <- data.frame(Fitness = w_genotypes,
+                     Genotype = names(w_genotypes))
+    # boxplot of fitness
+    ggplot(df,
+           aes(x = Genotype, y = Fitness, fill = Genotype)) +
+      geom_bar(stat="identity") +
+      scale_fill_manual(values = colours_genotypes) +
+      theme(legend.position="none")
+}
+
+## add a function to plot the genotypes over time
+
+## add a function to plot delta p
+
+plot_schematic(fitness_genotypes(sel_coef = 0.2,
+                                 dom_coef = -0.5))
+
+```
+
+
