@@ -13,7 +13,7 @@
 
 # load the environment
 
-#library(tidyverse) # for ggplot and pipe syntax
+library(tidyverse) # for ggplot and pipe syntax
 library(shiny) # for app
 #library(patchwork) # for combining multiple plots into 1
 library(bslib) # for most recent recommended UI options
@@ -78,13 +78,16 @@ plot_schematic <- function(w_genotypes) {
   # create df for nice plotting
   df <- data.frame(Fitness = w_genotypes,
                    Genotype = names(w_genotypes))
+  # make genotype a factor with levels for nice plotting
+  df$Genotype <- factor(df$Genotype,
+                        levels = c("AA", "Aa", "aA", "aa"))
   # boxplot of fitness
   ggplot(df,
          aes(x = Genotype, y = Fitness, fill = Genotype)) +
     geom_bar(stat="identity") +
     scale_fill_manual(values = colours_genotypes) +
     theme(legend.position="none") +
-    scale_y_continuous(expand = c(0, 0))
+    scale_y_continuous(limits = c(0, 2), expand = c(0, 0))
 }
 
 # a function to plot the genotypes over time
@@ -176,7 +179,7 @@ ui <- fluidPage(
   fluidRow(
     # interactively display the model parameters
     column(6,
-           "some text here?",
+           uiOutput("dynamEq"),
            plotOutput("fitLand")),
     # display the genotype frequencies over time
     column(6,
@@ -217,6 +220,15 @@ server <- function(input, output) {
   # outputs
   ######################
   
+  output$dynamEq <- renderUI({
+    temp_genotypes <- w_genotypes()
+    w_AA <- temp_genotypes["AA"]
+    w_Aa <- temp_genotypes["Aa"]
+    w_aa <- temp_genotypes["aa"]
+    
+    withMathJax(sprintf("$$p_{t+1} = \\frac{p_t^2 \\cdot %.01f + p_t(1-p_t) \\cdot %.01f}{p_t^2 \\cdot %.01f + 2p_t(1-p_t) \\cdot %.01f + (1-p_t)^2 \\cdot %.01f}$$",
+                        w_AA, w_Aa, w_AA, w_Aa, w_aa))
+  })
   output$fitLand <- renderPlot({plot_schematic(w_genotypes())})
   output$genoTime <- renderPlot({plot_t_genotypes(sims())})
   output$delta_p <- renderPlot({plot_p_byp(w_genotypes())})
