@@ -21,7 +21,7 @@ library(bslib) # for most recent recommended UI options
 
 # set the default plot style
 fave_theme <- theme_light() + # see other options at https://ggplot2.tidyverse.org/reference/ggtheme.html
-  theme(text = element_text(size=20), # larger text size for titles & axes
+  theme(text = element_text(size=19), # larger text size for titles & axes
         panel.grid.major = element_blank(), # remove major gridlines
         panel.grid.minor = element_blank()) # remove minor gridlines
 theme_set(fave_theme)
@@ -45,6 +45,23 @@ This R shiny code is modified from a similar app built by Silas Tittes [(availab
 
 # The model
 
+\[
+\begin{align}
+p_{t+1} &= \frac{p_t^2 w_{AA} + p_t(1-p_t)w_{Aa}}{\overline{w}} \\
+p_{t+1} &= \frac{p_t^2 w_{AA} + p_t(1-p_t)w_{Aa}}{p_t^2 w_{AA} + 2p_t(1-p_t)w_{Aa} + (1-p_t)^2 w_{aa}}
+\end{align}
+\]
+
+Here's what the code looks like:
+
+```{r example_code}
+# recursion equation: a function to get the allele frequency in the next generation
+next_p <- function(w_AA, w_heterozygote, current_p, W_bar){
+  output <- (current_p^2*w_AA + current_p*(1-current_p)*w_heterozygote) / W_bar
+  return(unname(output))
+}
+```
+
 ## The code
 
 ```{r model_functions}
@@ -59,12 +76,6 @@ fitness_genotypes <- function(sel_coef, dom_coef)
 # a function to get mean fitness of the population
 mean_fitness <- function(w_genotypes, freq){
   output <- freq^2*w_genotypes["AA"] + 2*freq*(1-freq)*w_genotypes["Aa"] + (1-freq)^2*w_genotypes["aa"]
-  return(unname(output))
-}
-
-# a function to get the allele frequency in the next generation
-next_p <- function(w_AA, w_hetero, freq, W_bar){
-  output <- (freq^2*w_AA + freq*(1-freq)*w_hetero) / W_bar
   return(unname(output))
 }
 
@@ -100,16 +111,80 @@ plot_schematic <- function(w_genotypes) {
            aes(x = Genotype, y = Fitness, fill = Genotype)) +
       geom_bar(stat="identity") +
       scale_fill_manual(values = colours_genotypes) +
-      theme(legend.position="none")
+      theme(legend.position="none") +
+      scale_y_continuous(expand = c(0, 0))
 }
 
-## add a function to plot the genotypes over time
+# a function to plot the genotypes over time
+plot_t_genotypes <- function(sim_df){
+  # remove the column for allele frequency and change the df to long format
+  plot_df <- sim_df %>% select(-p) %>%
+              pivot_longer(!gens, names_to="genotype", values_to="freq")
+  # make genotype a factor with levels for nice plotting
+  plot_df$genotype <- factor(plot_df$genotype,
+                             levels = c("AA", "hetero", "aa"))
+  # rename the factor levels for nice plotting
+  levels(plot_df$genotype) <- c("AA", "aA & Aa", "aa")
+  ggplot(plot_df,
+         aes(x=gens, y=freq, colour=genotype)) +
+    geom_line() +
+    scale_color_manual(values = unname(colours_genotypes)[-2]) +
+    labs(x= "Generation", y="Genotype frequency", color = "Legend") +
+    scale_y_continuous(limits = c(-0.01, 1.01), expand = c(0, 0))
+}
 
-## add a function to plot delta p
+# a function to plot the allele frequency over time
+plot_t_allele <- function(sim_df){
+  # keep just the columns for time and allele frequency
+  plot_df <- sim_df %>% select(gens, p)
+  ggplot(plot_df,
+         aes(x=gens, y=p)) +
+    geom_line() +
+    labs(x= "Generation", y="Allele frequency") +
+    scale_y_continuous(limits = c(-0.01, 1.01), expand = c(0, 0))
+}
 
-plot_schematic(fitness_genotypes(sel_coef = 0.2,
-                                 dom_coef = -0.5))
+# a function to plot delta p
+plot_p_byp <- function(w_genotypes){
+  # initialize a vector of allele frequencies from 0 to 1
+  plot_df <- data.frame(p = seq(0, 1, length.out = 1000)) %>%
+    # get the mean fitness at each allele frequency
+              mutate(W_bar = mean_fitness(w_genotypes, p),
+    # get delta_p by current allele frequency from that in the next generation
+                     delta_p = next_p(w_genotypes["AA"], w_genotypes["Aa"], p, W_bar) - p)
+  # figure out how to draw the arrows
+  # TO DO!!
+  ggplot(plot_df,
+         aes(x=delta_p, y=p)) +
+    geom_vline(xintercept = 0, linewidth=0.6, linetype = "dotted") +
+    geom_point() +
+    labs(x= expression("Change in allele freq. (" * Delta * "p)"), y="Allele frequency") +
+    scale_y_continuous(limits = c(-0.01, 1.01), expand = c(0, 0))
+}
 
 ```
 
+```{r explore_model}
+# no dominance: fitness of heterozygote is intermediate to both homozygotes
 
+# overdominance: heterozygote is most fit
+
+# underdominance: heterozygote is least fit
+s = 0.2
+h = -0.1
+p_rare = 0.246
+p_common = 0.254
+
+plot_schematic(fitness_genotypes(sel_coef = s, dom_coef = h))
+plot_p_byp(fitness_genotypes(sel_coef = s, dom_coef = h))
+
+# simulate starting from A rare
+sims <- sim_forward_time(num_gens=100, freq_init=p_rare, fitness_genotypes(sel_coef = s, dom_coef = h))
+plot_t_genotypes(sims)
+plot_t_allele(sims)
+
+# simulate with a different starting allele frequency
+sims <- sim_forward_time(num_gens=100, freq_init=p_common, fitness_genotypes(sel_coef = s, dom_coef = h))
+plot_t_genotypes(sims)
+plot_t_allele(sims)
+```
