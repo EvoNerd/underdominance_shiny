@@ -103,16 +103,36 @@ sim_forward_time <- function(num_gens, freq_init, w_genotypes){
 
 # plot fitness of the genotypes
 plot_schematic <- function(w_genotypes) {
+  # save the default graphics settings
+  #default_par <- par()
+  # new graphics settings that decrease the borders
+  par(cex.lab = 2, # increase size of axis labels
+      cex.axis = 1.5, # increase size of tick mark labels 
+      mar = c(4.2, 4.4, 1, 0.1)) # decrease the borders
+  
+  # plot using base R
+  output <- barplot(
+                    w_genotypes, 
+                    col = colours_genotypes[names(w_genotypes)], 
+                    border = "black", 
+                    ylim = c(0, 2), 
+                    ylab = "Fitness",
+                    xlab = "Genotype"
+                   )
+  # finally, reset to default graphics settings
+  #par(default_par)
+  #return(output)
+  
     # create df for nice plotting
-    df <- data.frame(Fitness = w_genotypes,
-                     Genotype = names(w_genotypes))
+    #df <- data.frame(Fitness = w_genotypes,
+    #                 Genotype = names(w_genotypes))
     # boxplot of fitness
-    ggplot(df,
-           aes(x = Genotype, y = Fitness, fill = Genotype)) +
-      geom_bar(stat="identity") +
-      scale_fill_manual(values = colours_genotypes) +
-      theme(legend.position="none") +
-      scale_y_continuous(expand = c(0, 0))
+    #ggplot(df,
+    #       aes(x = Genotype, y = Fitness, fill = Genotype)) +
+    #  geom_bar(stat="identity") +
+    #  scale_fill_manual(values = colours_genotypes) +
+    #  theme(legend.position="none") +
+    #  scale_y_continuous(expand = c(0, 0))
 }
 
 # a function to plot the genotypes over time
@@ -141,7 +161,8 @@ plot_t_allele <- function(sim_df){
          aes(x=gens, y=p)) +
     geom_line() +
     labs(x= "Generation", y="Allele frequency") +
-    scale_y_continuous(limits = c(-0.01, 1.01), expand = c(0, 0))
+    scale_y_continuous(limits = c(-0.01, 1.01), expand = c(0, 0)) +
+    scale_x_continuous(expand = c(0,0))
 }
 
 # a function to plot delta p
