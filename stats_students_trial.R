@@ -3,17 +3,19 @@
 
 # load the environment
 
-library(tidyverse) # for ggplot and pipe syntax
+library(tidyverse) # for pipe syntax
 library(shiny) # for app
 library(bslib) # for most recent recommended UI options
 library(thematic) # for converting R plots to have consistent theme as from bslib
 
 # define colour scheme for genotypes
 # use rgb to set transparency (alpha = 0.75) # note that max value for alpha is 255 so 0.75*255 ~ 191
-colours_genotypes <- c(AA = rgb(178, 34, 34, maxColorValue = 255, alpha = 191),  # Firebrick
-                       Aa = rgb(255, 165, 0, maxColorValue = 255, alpha = 191),  # Orange
-                       aA = rgb(255, 165, 0, maxColorValue = 255, alpha = 191),  # Orange
-                       aa = rgb(255, 215, 0, maxColorValue = 255, alpha = 191))  # Gold
+colours_genotypes <- c(AA = rgb(130, 32, 0, maxColorValue = 255, alpha = 191),  # Firebrick
+                       Aa = rgb(244, 114, 48, maxColorValue = 255, alpha = 191)) # Orange
+colours_genotypes["aA"] <- colours_genotypes["Aa"]
+colours_genotypes["aa"] <- rgb(244, 212, 48, maxColorValue = 255, alpha = 191)  # Gold
+
+
 colour_p <- "#2D1C56"
 
 # set the theme for bslib objects
@@ -158,8 +160,12 @@ plot_schematic <- function(w_genotypes) {
     border = "black", 
     ylim = c(0, 1.6), 
     ylab = "Fitness",
-    xlab = "Genotype"
+    xlab = "Genotype",
+    yaxt = "n"  # Suppress default y-axis tick labels
   )
+  
+  # Add custom y-axis tick labels
+  axis(2, at = seq(from=0, to=1.5, by=0.5), labels = c("0", "", "1", ""))
   
   # add a box around the whole plot
   box()

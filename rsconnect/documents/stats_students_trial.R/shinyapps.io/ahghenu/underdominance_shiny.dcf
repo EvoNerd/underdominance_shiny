@@ -5,9 +5,9 @@ account: ahghenu
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 14415318
-bundleId: 10339937
+bundleId: 10340009
 url: https://ahghenu.shinyapps.io/underdominance_shiny/
 version: 1
 asMultiple: FALSE
 asStatic: FALSE
-ignoredFiles: additive_FL.png|app.R|LICENSE|model_overview.html|model_overview.Rmd|navbar_is_not_working_horizontal.R|overdominant_FL.png|stats_students_trial.Rmd|temp_example_app.R|temp_example_app2.R|underdominant_FL.png
+ignoredFiles: additive_FL.png|app.R|LICENSE|model_overview.html|model_overview.Rmd|overdominant_FL.png|stats_students_trial.Rmd|underdominant_FL.png
