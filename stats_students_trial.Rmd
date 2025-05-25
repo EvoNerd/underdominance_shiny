@@ -1,3 +1,15 @@
+---
+title: "Exploring (under)dominance R Shiny app"
+author: "Ana-Hermina Ghenu"
+date: "2025-05-21"
+output: 
+  html_document:
+    code_folding: hide
+runtime: shiny
+---
+
+
+```{r setup, include=FALSE}
 #
 # author: Ana-Hermina Ghenu
 # contact: ana.hermina.ghenu at gmail dot com
@@ -38,12 +50,6 @@ colours_genotypes <- c(AA = rgb(178, 34, 34, maxColorValue = 255, alpha = 191), 
 ###################################
 # define simulation functions
 ###################################
-
-# recursion equation: a function to get the allele frequency in the next generation
-next_p <- function(w_AA, w_heterozygote, current_p, W_bar){
-  output <- (current_p^2*w_AA + current_p*(1-current_p)*w_heterozygote) / W_bar
-  return(unname(output))
-}
 
 # a function to get the fitness of the genotypes
 fitness_genotypes <- function(sel_coef, dom_coef)
@@ -265,3 +271,192 @@ plot_p_byp <- function(deltap.df, steady_state) {
   # Add a dotted vertical line at x = 0
   abline(v = 0, lty = 3, lwd = 0.6, col = "black")
 }
+```
+
+
+Suppose you have two different alleles in a population, $A$ and $a$. On average, individuals with the $A$ allele are more fit than those with the $a$ allele: they are more likely to survive and reproduce. It would be reasonable to presume that the $A$ allele will eventually replace the $a$ allele in the population. In other words, if we use $p$ to denote the proportion of $A$ alleles in the population, it would be reasonable to expect that after a sufficiently long time $p=1$. 
+
+However, for a diploid population, the outcome of selection depends on the fitness of heterozygous individuals.
+
+This interactive tutorial will explain why the more fit allele, $A$, may not always replace the less fit allele, $a$. And it will allow you to explore how the fitness of heterozygous individuals impacts the outcome of selection.
+
+Recall that for a diploid population there are three different genotypes:
+
+- $aa$: homozygous for $a$. By convention these individuals have a fitness of one, $w_{aa} = 1$.
+
+- $AA$: homozygous for $A$. Let's suppose selection is very strong and that these individuals are 30% more likely to survive and reproduce than $aa$ homozygous individuals, so $w_{AA}= w_{aa} + s = 1 + s = 1+0.3 =1.3$.
+
+- $Aa$ or $aA$: heterozygous individuals have both $A$ and $a$ alleles. We will allow the fitness of these individuals to vary by defining their fitness as $w_{Aa} = 1 + s - h = 1.3 - h$. The variable $h$ is called the "dominance coefficient". (We assume that the two heterozygotes have equal fitness, $w_{Aa} = w_{aA}$.)
+
+In the app below, the first slider allows you to manipulate the dominance coefficient. Intermediate values of the dominance coefficient ($h$ between 0 and 0.3) yield heterozygous individuals with a fitness value that is intermediate between the homozygous individuals:
+
+[ADD FIGURE!!!: schematic for h=0.15]
+
+Small values of the dominance coefficient ($h$ between -1 and 0) mean that heterozygous individuals have the lowest fitness value:
+
+[ADD ANOTHER FIGURE!!!: schematic for h=-0.5]
+
+**Try manipulating the first slider to see how the heterozygote fitness changes.**
+
+The allele frequency of $A$ in the next generation ($p_{t+1}$) depends on how many $AA$ homozygous and heterozygous individuals there and the fitness of these individuals as compared to the mean population fitness in the current generation ($\overline{w_t}$). This equation is called a recursion equation and it is written as follows:
+\[
+\begin{align}
+p_{t+1} &= \frac{p_t^2 \cdot w_{AA} + p_t(1-p_t) \cdot w_{Aa}}{\overline{w_t}}\\
+        &= \frac{p_t^2 (1+s) + p_t (1-p_t) (1+s+h)}{\overline{w_t}}\\
+        &= \frac{p_t^2 (1.3) + p_t (1-p_t) (1.3+h)}{\overline{w_t}}
+\end{align}
+\]
+A dynamic version of the recursion equation is shown in the app below. Changing the dominance coefficient ($h$) using the first slider will change the values in the recursion equation.
+
+**Try manipulating the first slider to see how the recursion equation changes.**
+
+(If you're curious to see how the recursion equation can be coded in the R programming language, you can click on the button below:)
+
+```{r recursion_show}
+# recursion equation: a function to get the allele frequency in the next generation
+next_p <- function(w_AA, w_heterozygote, current_p, W_bar){
+  output <- (current_p^2*w_AA + current_p*(1-current_p)*w_heterozygote) / W_bar
+  return(unname(output))
+}
+```
+
+The change in the allele frequency of $A$ from the current generation to the next generation, $\Delta p = p_{t+1} - p_t$, tells you whether $A$ is increasing ($\Delta p > 0$) or decreasing ($\Delta p < 0$). When $\Delta p = 0$ the allele frequency is at the equilibrium point and it does not change from one generation to the next. <span style="color: red;"> **An attractor** is a stable equilibrium point: if the initial allele frequency of $A$ is near enough to the attractor, then the population will eventually end up at this value after some time.</span>
+
+The app below shows a plot of $\Delta p$ (x-axis) as a function of $p$ (y-axis) on the bottom left. When the dominance coefficient ($h$) is set to an intermediate value using the first slider, the $A$ allele will always increase in frequency and eventually fix in the population. In this case there is only one attractor, which is indicated by the upward arrow in the plot:
+
+[ADD FIGURE HERE!!!: delta_p by p for h=0.15]
+
+**Try manipulating the first slider to see how the trajectory of $\Delta p$ versus $p$ changes.**
+
+When the dominance coefficient ($h$) is set to a low value using the first slider, there are two attractors. This is indicated by the upward and downward arrows in the plot:
+
+[ADD FIGURE HERE!!!: delta_p by p for h=-0.5]
+
+**How many attractors are there for different values of $h$? When the number of attractors changes, we say that the qualitative behaviour has changed because a different number of outcomes are possible. Which values of $h$ lead to qualitatively different behaviours of the model? What is special about these values of $h$?**
+
+The plot in the lower right of the app illustrates how the allele frequency of $A$ ($p$) changes over time. This plot can be manipulated by all three sliders,
+
+- As you already know, the first slider changes the dominance coefficient ($h$).
+
+- The second slider changes the initial frequency of the $A$ allele ($p$ at time $=0$).
+
+- Finally, the third slider, number of generations over time, changes the maximum time value shown on the x-axis of the plot.
+
+[ADD FIGURE HERE!!!]
+
+**Keep the first slider, dominance coefficient ($h$), fixed at some value and play around with different values for the second slider, initial allele frequency of $A$, and third slider, number of generations over time. Compare the equilibrium points on the lower left plot ($\Delta p$ versus $p$) to where the allele frequency $p$ ends up after a long period of time in the lower right plot. How are the lower left and lower right plots related?**
+
+We can better understand what is happening if we look at the genotype frequencies over time. This is shown in the upper right plot of the app. This plot can be manipulated by all three sliders. When the dominance coefficient ($h$) is set to an intermediate value and the initial allele frequency of $A$ is set to a small value, the increase in allele frequency is mediated by the higher fitness of the heterozygotes as compared to the dominant $aa$ homozygote.
+
+[ADD FIGURE HERE!!!: genotypes plot for h=0.15 and p=0.02]
+
+When the $A$ allele is rare, all individuals that have the $A$ allele are heterozygous. In other words, the $A$ allele is too rare to produce any $AA$ homozygous individuals. $AA$ homozygous individuals can only be produced once there are enough heterozygous individuals to randomly encounter and mate with one another.
+
+**Keep the first slider, dominance coefficient ($h$), at some low value ($h$ < 0) and play around with different values of the second slider, initial allele frequency of $A$. What is the frequency of homozygous $AA$ and heterozygous individuals at the start of time (generation $=0$)? What happens to these individuals over time? How does the initial allele frequency of $A$ impact where the population ends up after a long period of time?**
+
+```{r the_app, echo=FALSE}
+# user interface
+ui <- fluidPage(
+  
+  # Apply a modern Bootstrap theme
+  theme = bs_theme(bootswatch = "flatly"),
+  
+  # Title
+  titlePanel("Diploid model of selection with underdominance"),
+  
+  # Top row with sliders
+  fluidRow(
+    column(4,
+           sliderInput(inputId = "h",
+                       label = "Underdominance coefficient (h)",
+                       value = 0.1, 
+                       min = -1, max = 0.5,
+                       step = 0.1)
+    ),
+    column(4,
+           sliderInput(inputId = "p_init",
+                       label = "Initial allele frequency of A (p)",
+                       value = 0.02, 
+                       min = 0.02, max = 0.98,
+                       step = 0.02)
+    ),
+    column(4,
+           sliderInput(inputId = "gen",
+                       label = "Number of generations",
+                       value = 50, 
+                       min = 5, max = 950,
+                       step = 5)
+    )
+  ),
+  
+  # Middle and bottom rows replaced with cards in a responsive grid
+  layout_columns(
+    card(
+      card_header("Dynamic Equilibrium & Fitness Landscape"),
+      plotOutput("fitLand"),
+      uiOutput("dynamEq")
+    ),
+    card(
+      card_header("Genotype Frequencies Over Time"),
+      plotOutput("genoTime")
+    ),
+    card(
+      card_header("Δp vs p"),
+      plotOutput("delta_p")
+    ),
+    card(
+      card_header("Allele Frequency Over Time"),
+      plotOutput("alleleTime")
+    ),
+    col_widths = c(6, 6, 6, 6)  # Optional: adjust widths for layout balance
+  )
+)
+
+
+# Server logic
+server <- function(input, output) {
+  # fix the selection coefficient
+    # be careful to choose a value that does *NOT* result in neutral system
+  s <- 0.305
+  
+  ######################
+  # expressions
+  ######################
+  
+  # a reactive expression to get the fitness of the genotypes
+  w_gent <- reactive(fitness_genotypes(sel_coef = s,
+                                       dom_coef = input$h))
+  
+  # a reactive expression to get delta p as a function of allele frequecy (p)
+  delta_p <- reactive(get_p_byp(w_gent()))
+  
+  # a reactive expression to get the long-term model outcome
+  outcome <- reactive(get_steady_state(w_genotypes = w_gent(), deltap.df = delta_p()))
+  
+  # a reactive expression to simulate evolution of the system over time
+  sims <- reactive(sim_forward_time(num_gens = input$gen,
+                                    freq_init = input$p_init,
+                                    w_gent()))
+  
+  ######################
+  # outputs
+  ######################
+  
+  output$dynamEq <- renderUI({
+    temp_genotypes <- w_gent()
+    w_AA <- temp_genotypes["AA"]
+    w_Aa <- temp_genotypes["Aa"]
+    
+    withMathJax(sprintf("$${\\small p_{t+1} = \\frac{p_t^2 \\cdot (1+s) + p_t(1-p_t) \\cdot (1+s+h)}{\\overline{w}} = \\frac{p_t^2 \\cdot %.01f + p_t(1-p_t) \\cdot %.01f}{\\overline{w}}}$$",
+                        w_AA, w_Aa))
+  })
+  output$fitLand <- renderPlot({plot_schematic(w_gent())})
+  output$genoTime <- renderPlot({plot_t_genotypes(sims())})
+  output$delta_p <- renderPlot({plot_p_byp(delta_p(), outcome())})
+  output$alleleTime <- renderPlot({plot_t_allele(sims())})
+  
+}
+
+# Complete app with UI and server components
+shinyApp(ui, server)
+```
