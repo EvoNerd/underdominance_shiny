@@ -56,7 +56,7 @@ ui <- fluidPage(
   
   navset_card_pill(# use pill-shaped buttons to navigate
     # explain what the tabs on this card do
-    title = "Select a topic",
+    title = "Select a topic:",
     
     nav_panel("Introduction",
               markdown(text_intro)),
@@ -85,7 +85,7 @@ ui <- fluidPage(
     ),
     column(4,
            sliderInput(inputId = "p_init",
-                       label = "Initial $A$ allele frequency $(p)$",
+                       label = "Initial $A$ allele frequency $(p_0)$",
                        value = 0.02, 
                        min = 0.02, max = 0.98,
                        step = 0.02)
@@ -157,12 +157,13 @@ server <- function(input, output) {
     temp_genotypes <- w_gent()
     w_AA <- temp_genotypes["AA"]
     w_Aa <- temp_genotypes["Aa"]
-    # I would like to print the recursion equation with all variables as a reminder
-      # but I can't get it to fit in the card width unless the font size is too small!!
-    #withMathJax(sprintf("$${\\tiny p_{t+1} = \\frac{p_t^2 \\cdot (1+s) + p_t(1-p_t) \\cdot (1+s+h)}{\\overline{w}} = \\frac{p_t^2 \\cdot %.01f + p_t(1-p_t) \\cdot %.01f}{\\overline{w}}}$$",
-    #                    w_AA, w_Aa))
-    withMathJax(sprintf("$${ p_{t+1} = \\frac{p_t^2 \\cdot %.01f + p_t(1-p_t) \\cdot %.01f}{\\overline{w}}}$$",
-                                            w_AA, w_Aa))
+    # first define the equation by colouring the dynamic variables with their appropriate colours
+    the_eqn <- paste0("$${ p_{t+1} = \\frac{p_t^2 \\cdot ",
+                      "\\color{", substring(colours_genotypes["AA"], first=1, last=7),"}{%.01f}",
+                      " + p_t(1-p_t) \\cdot ",
+                      "\\color{", substring(colours_genotypes["Aa"], first=1, last=7),"}{%.01f}","}{\\overline{w}}}$$")
+    # then typeset the equation using MathJax
+    withMathJax(sprintf(the_eqn, w_AA, w_Aa))
   })
   # render fitness landscape schematic:
   output$fitLand <- renderPlot({plot_schematic(w_gent())})
