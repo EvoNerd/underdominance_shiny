@@ -12,7 +12,6 @@ colours_genotypes <- c(AA = rgb(130, 32, 0, maxColorValue = 255, alpha = 191),  
 colours_genotypes["aA"] <- colours_genotypes["Aa"]
 colours_genotypes["aa"] <- rgb(244, 212, 48, maxColorValue = 255, alpha = 191)  # Gold
 
-
 colour_p <- "#2D1C56"
 
 ###################################
