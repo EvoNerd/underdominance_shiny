@@ -1,0 +1,13 @@
+name: underdom
+title: underdom
+username: ahghenu
+account: ahghenu
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15062877
+bundleId: 10600202
+url: https://ahghenu.shinyapps.io/underdom/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
+ignoredFiles: app_WOthematic.R|underdom_funs - Copy.txt
