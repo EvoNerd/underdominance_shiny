@@ -47,6 +47,9 @@ ui <- fluidPage(
             });
             </script >
             ")),
+  
+  # for ESEB conference:
+  markdown("# Interested in participating in our study? contact ana-hermina.ghenu@unibe.ch"),
 
   # Title
   titlePanel("Diploid selection with (under)dominance"),
@@ -80,7 +83,7 @@ ui <- fluidPage(
            sliderInput(inputId = "h_slider",
                        label = "Dominance coefficient $(h)$",
                        value = 0.1, 
-                       min = -1, max = 0.5,
+                       min = -0.4, max = 0.3,
                        step = 0.1)
     ),
     column(4,
@@ -94,8 +97,8 @@ ui <- fluidPage(
            sliderInput(inputId = "gen",
                        label = "Number of generations",
                        value = 50, 
-                       min = 5, max = 250,
-                       step = 5)
+                       min = 20, max = 200,
+                       step = 10)
     )
   ),
   
