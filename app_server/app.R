@@ -1,7 +1,7 @@
-# a shiny app to explore bistability in the context of underdominance
+# a shiny app whose format is adapted specifically for the experiment
 #   this is the main file. It loads dependencies then runs the app.
 #author: Ana-Hermina Ghenu
-#date: 2025-05-25
+#date: 2025-10-08
 
 # load the environment
 source("underdom_funs.R")
@@ -22,11 +22,11 @@ app_theme <- bs_theme(bootswatch = "simplex", # set simplex theme
 
 # call thematic before launching the shiny
   # this will integrate the theme from bslib to how the plots are displayed
-thematic_shiny(font = font_spec("auto", scale = 1.8))
+thematic_shiny(font = font_spec("auto"))
 
 # user interface
 ui <- fluidPage(
-
+  
   theme = app_theme,
   
   # set all cards to have a white background
@@ -37,6 +37,25 @@ ui <- fluidPage(
       }
     "))
   ),
+  # reduce the font size of slider controls
+  tags$style(HTML("
+    .control-label {
+      font-size: 14px;
+    }
+  ")),
+  # I tried to reduce the size of the slider but I don't think it does anything
+  tags$style(HTML("
+    .js-range-slider {
+      height: 0px !important;
+    }
+  ")),
+  # reduce the font size of card headers
+  tags$style(HTML("
+    .card-header {
+      font-size: 14px;
+    }
+  ")),
+
   
   # typeset math using latex code
   withMathJax(),
@@ -47,15 +66,8 @@ ui <- fluidPage(
             });
             </script >
             ")),
-  
-  # for ESEB conference:
-  markdown("# Interested in participating in our study? contact ana-hermina.ghenu@unibe.ch"),
 
-  # Title
-  titlePanel("Diploid hybridization with (under)dominance"),
-  
-  # a subtitle / summary can be added here:
-  markdown(text_subtitle),
+  HTML("<br>"),
   
   navset_card_pill(# use pill-shaped buttons to navigate
     # explain what the tabs on this card do
@@ -69,10 +81,6 @@ ui <- fluidPage(
     nav_panel("What's going on?", markdown(text_huh)),
     
     nav_panel("Key Insight", markdown(text_genotypes)),
-    
-    #nav_panel("Things to try", markdown(text_try)),
-    
-    #nav_panel("Optional: code", markdown(text_code)),
     
     nav_panel("Summary", markdown(text_summary))
   ),
@@ -103,24 +111,25 @@ ui <- fluidPage(
   ),
   
   # Middle and bottom rows replaced with cards in a responsive grid
-  layout_columns(height="600px", # sets the overall height of the 2 column layout
+  layout_columns(height="440px", # sets the overall height of the 2 column layout
+                 gap = "0rem", # removes the whitespace between cards
     card(
       card_header("1. Model schematic & Equation"),
-      card_body(plotOutput("fitLand", height = "150px"),
+      card_body(plotOutput("fitLand", height="125px"),
                 uiOutput("dynamEq"),
                 class = "align-items-center")
     ),
     card(
       card_header("3. Genotype Frequencies over Time"),
-      plotOutput("genoTime", height="220px")
+      plotOutput("genoTime", height="150px")
     ),
     card(
       card_header("2. Change in Allele Frequency ($\\Delta p = p_{t+1} - p_t$)"),
-      plotOutput("delta_p", height="220px")
+      plotOutput("delta_p", height="150px")
     ),
     card(
       card_header("4. Allele Frequency ($p$) over Time"),
-      plotOutput("alleleTime", height="220px")
+      plotOutput("alleleTime", height="150px")
     ),
     col_widths = breakpoints(
       sm = c(7, 5, 7, 5), # for portrait-mode phones, left column is wider than right column
@@ -164,7 +173,7 @@ server <- function(input, output) {
     w_AA <- temp_genotypes["AA"]
     w_Aa <- temp_genotypes["Aa"]
     # first define the equation by colouring the dynamic variables with their appropriate colours
-    the_eqn <- paste0("$${ p_{t+1} = \\frac{p_t^2 \\cdot ",
+    the_eqn <- paste0("$$\\scriptsize{ p_{t+1} = \\frac{p_t^2 \\cdot ",
                       "\\color{", substring(colours_genotypes["AA"], first=1, last=7),"}{%.01f}",
                       " + p_t(1-p_t) \\cdot ",
                       "\\color{", substring(colours_genotypes["Aa"], first=1, last=7),"}{%.01f}","}{\\overline{w}}}$$")
@@ -174,11 +183,16 @@ server <- function(input, output) {
   # render fitness landscape schematic:
   output$fitLand <- renderPlot({plot_schematic(w_gent())})
   # render genotypes over time plot
-  output$genoTime <- renderPlot({ggplot_genotype_finiteANDoutcome(sims(), outcome())})
+  ### WITH PATCHWORK: uncomment line 169 and delete lines 170-171
+  #output$genoTime <- renderPlot({ggplot_genotype_finiteANDoutcome(sims(), outcome())})
+  output$genoTime <- renderPlot({ggplot_genotype_finite(genotypes_df = sims()$genotypes,
+                                                        genotype_levels = c("aa", "Aa", "AA"))})
   # render p vs delta p plot
   output$delta_p <- renderPlot({plot_dp_by_p(delta_p(), outcome())})
   # render allele frequency over time plot
-  output$alleleTime <- renderPlot({ggplot_p_finiteANDoutcome(sims(), outcome())})
+  ### WITH PATCHWORK: uncomment line 176 and delete line 177
+  #output$alleleTime <- renderPlot({ggplot_p_finiteANDoutcome(sims(), outcome())})
+  output$alleleTime <- renderPlot({ggplot_p_finite(p_df = sims()$allele)})
 }
 
 # Complete app with UI and server components

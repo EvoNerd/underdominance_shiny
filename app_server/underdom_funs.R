@@ -1,10 +1,12 @@
 # underdominance shiny app dependency for app.R
 #   simulation and plotting functions are defined here
 #author: Ana-Hermina Ghenu
-#date: 2025-05-25
+#date: 2025-10-08
 
 library(ggplot2)   # for plotting the time series
-library(patchwork) # for combining ggplots in the time series
+# PATCHWORK HAS BEEN TEMPORARILY REMOVED FOR HACKY DEPLOYMENT TO THE BINF SERVER
+# remember that lines 168 - 175 also need to be changed to show the patchworked plot
+#library(patchwork) # for combining ggplots in the time series
 
 # define colour scheme for genotypes
 # use rgb to set transparency (alpha = 0.75) # note that max value for alpha is 255 so 0.75*255 ~ 191
@@ -77,9 +79,6 @@ get_p_byp <- function(w_genotypes) {
   return(data.frame(p=p_values, delta_p=delta_p_values))
 }
 
-
-## TO DO: HERE IS THE EQN TO GET THE EQUILIBRIUM PT:
-#EqPt_over <- (w_over["Aa"] - w_over["aa"])/(2*w_over["Aa"] - w_over["AA"] - w_over["aa"])
 # a function to get the non-trivial equilibrium point
 get_equilibrium_pt <- function(w_genotypes)
   unname((w_genotypes["Aa"] - w_genotypes["aa"]) / (2*w_genotypes["Aa"] - w_genotypes["AA"] - w_genotypes["aa"]))
@@ -156,64 +155,41 @@ get_steady_state <- function(w_genotypes, deltap.df){
 # plot fitness of the genotypes
 plot_schematic <- function(w_genotypes) {
   # change the graphing settings
-  par(cex.lab = 2, # increase size of axis labels
-      cex.axis = 1.5, # increase size of tick mark labels 
-      mar = c(4.2, 4.4, 0.02, 0.02)) # decrease the borders
+  par(cex.axis = 1.5, # increase size of tick mark labels 
+      mar = c(2.0, 3.5, 0.01, 0.02), # decrease the borders
+      mgp = c(1.0, 0.1, 0) # decrease vertical white space btw tick labels and plot
+      ) 
   
   # make the barplot in graphics (i.e., base R)
   barplot(
     w_genotypes, 
+    cex.lab = 1.35,
     col = colours_genotypes[names(w_genotypes)], 
     border = "black", 
     ylim = c(0, 1.6), 
-    ylab = "Fitness",
+    ylab = "",
     xlab = "Genotype",
     yaxt = "n"  # Suppress default y-axis tick labels
   )
   
   # Add custom y-axis tick labels
-  axis(2, at = seq(from=0, to=1.5, by=0.5), labels = c("0", "", "1", ""))
-  
+  axis(2, at = seq(from=0, to=1.5, by=0.5), labels = c("0", "", "1", ""), mgp = c(3, 1, 0))
+  # add custom y-axis label
+  mtext("Fitness", side = 2, line = 2.0, adj=0.35, cex = 1.35)
+
+
   # add a box around the whole plot
   box()
 }
 
-# # a function to plot the genotypes over time
-# plot_t_genotypes <- function(sim_df) {
-#   # Define colors for genotypes
-#   temp_colours <- colours_genotypes[c(1,2,4)]
-#   
-#   # change the graphing settings
-#   par(cex.lab = 2, # increase size of axis labels
-#       cex.axis = 1.5, # increase size of tick mark labels 
-#       mar = c(3.9, 4.4, 2.2, 0.85)) # decrease the borders
-#   
-#   # Set up an empty plot
-#   plot(sim_df$gens, sim_df$AA,
-#        type = "n",
-#        ylim = c(-0.01, 1.01), yaxs = "i", # remove y-axis padding
-#        xlab = "Generation",
-#        ylab = "Genotype frequency",
-#        yaxt = "n"  # Suppress default y-axis tick labels
-#        )
-#   
-#   # Add custom y-axis tick labels
-#   axis(2, at = seq(from=0, to=1, by=0.25), labels = c("0", "", "0.5", "", "1"))
-#   
-#   # Add lines for each genotype
-#   lines(sim_df$gens, sim_df$AA,     col = temp_colours[1], lwd = 7)
-#   lines(sim_df$gens, sim_df$hetero, col = temp_colours[2], lwd = 7)
-#   lines(sim_df$gens, sim_df$aa,     col = temp_colours[3], lwd = 7)
-# }
-
 plot_dp_by_p <- function(deltap.df, steady_state) {
   # change the graphing settings
-  par(cex.lab = 2, # increase size of axis labels
-      cex.axis = 1.5, # increase size of tick mark labels 
-      mar = c(4.0, 4.6, 2.4, 0.85)) # decrease the borders
+  par(cex.axis = 1.5, # increase size of tick mark labels 
+      mar = c(4.0, 4.6, 2, 0.8)) # decrease the borders
   
   # create the empty plot area
   plot(1, type = "n",
+       cex.lab = 1.35,
        xlab = "Allele frequency (p)",
        ylab = expression("Change in p (" * Delta * "p)"),
        xlim = c(-0.01, 1.01), xaxs = "i",  # set a fixed padding for x axis
@@ -253,13 +229,13 @@ plot_dp_by_p <- function(deltap.df, steady_state) {
            col="white", cex=1.2, lwd=2)
     points(x=0, y=0, pch=23, bg=substring(colours_genotypes["aa"], first=1, last=7),
            col="white", cex=1.2, lwd=2)
-    # Add a legend with just the point for the AA attractor
+    # Add a legend with just the point for the aa attractor
     legend("bottomright", "Attractors", text.col="white", pch=18, col=colours_genotypes["aa"],
-           cex=1.6, inset=c(0.03,0.95), xpd=TRUE, horiz=TRUE, bty="n"
+           cex=1.3, inset=c(0.12,0.95), xpd=TRUE, horiz=TRUE, bty="n"
     )
     # Add the legend for the AA attractor
     legend("bottomright", "Attractors", pch=18, col=colours_genotypes["AA"],
-           cex=1.6, inset=c(0,0.95), xpd=TRUE, horiz=TRUE, bty="n"
+           cex=1.3, inset=c(0.03,0.95), xpd=TRUE, horiz=TRUE, bty="n"
     )
     
   } else if(steady_state$outcome == "p=1"){
@@ -273,7 +249,7 @@ plot_dp_by_p <- function(deltap.df, steady_state) {
            col="white", cex=1.2, lwd=2)
     # Add the legend for the attractor
     legend("bottomright", "Attractor", pch=18, col=colours_genotypes["AA"],
-           cex=1.6, inset=c(0,0.95), xpd=TRUE, horiz=TRUE, bty="n"
+           cex=1.3, inset=c(0.03,0.95), xpd=TRUE, horiz=TRUE, bty="n"
     )
     
   } else if(steady_state$outcome == "p intermediate"){
@@ -292,7 +268,7 @@ plot_dp_by_p <- function(deltap.df, steady_state) {
            col="white", cex=1.2, lwd=2)
     # Add the legend for the attractor
     legend("bottomright", "Attractor", pch=18, col=colours_genotypes["Aa"],
-           cex=1.6, inset=c(0,0.95), xpd=TRUE, horiz=TRUE, bty="n"
+           cex=1.3, inset=c(0.03,0.95), xpd=TRUE, horiz=TRUE, bty="n"
     )
   }
 }
@@ -324,8 +300,8 @@ ggplot_genotype_finite <- function(genotypes_df, genotype_levels){
                        labels = c(ticks_y[1], "", ticks_y[3], "", ticks_y[5])) +
     labs(x="Generation", y="Genotype Frequency") +
     theme_bw() + 
-    theme(text = element_text(size=22),
-          axis.text=element_text(size=18),
+    theme(text = element_text(size=14),
+          axis.text=element_text(size=12),
           axis.line.y=element_blank(),
           axis.title.y = element_text(hjust=0.9), # move y-axis label down
           panel.grid.major = element_blank(),
@@ -373,8 +349,8 @@ ggplot_genotype_inf <- function(allele_df, steady_state, genotype_levels){
     scale_x_continuous(limits=c(0.5, 1.5), breaks = c(1), labels = "long-\nterm") +
     scale_y_continuous(limits = c(-0.02, 1.02), expand = c(0, 0)) +
     labs(x="") +
-    theme_bw() + theme(text = element_text(size=22),
-                       axis.text=element_text(size=18),
+    theme_bw() + theme(text = element_text(size=14),
+                       axis.text=element_text(size=12),
                        axis.line.y=element_blank(),
                        axis.text.y=element_blank(),
                        axis.ticks.y=element_blank(),
@@ -427,8 +403,8 @@ ggplot_p_finite <- function(p_df){
                        labels = c(ticks_y[1], "", ticks_y[3], "", ticks_y[5])) +
     labs(x="Generation", y="Allele Frequency") +
     theme_bw() + 
-    theme(text = element_text(size=22),
-          axis.text=element_text(size=18),
+    theme(text = element_text(size=14),
+          axis.text=element_text(size=12),
           axis.line.y=element_blank(),
           axis.title.y = element_text(hjust=0.7), # move y-axis label down
           panel.grid.major = element_blank(),
@@ -463,8 +439,8 @@ ggplot_p_inf <- function(p_df, steady_state){
     scale_x_continuous(limits=c(0.5, 1.5), breaks = c(1), labels = "long-\nterm") +
     scale_y_continuous(limits = c(-0.02, 1.02), expand = c(0, 0)) +
     labs(x="") +
-    theme_bw() + theme(text = element_text(size=22),
-                       axis.text=element_text(size=18),
+    theme_bw() + theme(text = element_text(size=14),
+                       axis.text=element_text(size=12),
                        axis.line.y=element_blank(),
                        axis.text.y=element_blank(),
                        axis.ticks.y=element_blank(),
