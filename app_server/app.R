@@ -76,7 +76,7 @@ ui <- fluidPage(
     nav_panel("Introduction",
               markdown(text_intro)),
 
-    nav_panel("How to use the app & Things to try", markdown(text_howto)),
+    nav_panel("App How-to & Things to Try", markdown(text_howto)),
     
     nav_panel("What's going on?", markdown(text_huh)),
     
@@ -96,7 +96,7 @@ ui <- fluidPage(
     ),
     column(4,
            sliderInput(inputId = "p_init",
-                       label = "Initial $A$ allele frequency $(p_0)$",
+                       label = "Initial $A$ allele freq. $(p_0)$",
                        value = 0.02, 
                        min = 0.02, max = 0.5,
                        step = 0.04)
@@ -114,21 +114,21 @@ ui <- fluidPage(
   layout_columns(height="440px", # sets the overall height of the 2 column layout
                  gap = "0rem", # removes the whitespace between cards
     card(
-      card_header("1. Model schematic & Equation"),
+      card_header("1. Fitness landscape & Equation"),
       card_body(plotOutput("fitLand", height="125px"),
                 uiOutput("dynamEq"),
                 class = "align-items-center")
     ),
     card(
-      card_header("3. Genotype Frequencies over Time"),
+      card_header("3. Genotypes over Time"),
       plotOutput("genoTime", height="150px")
     ),
     card(
-      card_header("2. Change in Allele Frequency ($\\Delta p = p_{t+1} - p_t$)"),
+      card_header(HTML("2. Change in Allele Freq. <span style='white-space: nowrap;'>($\\Delta p = p_{t+1} - p_t$)</span>")),
       plotOutput("delta_p", height="150px")
     ),
     card(
-      card_header("4. Allele Frequency ($p$) over Time"),
+      card_header("4. Allele Freq. ($p$) over Time"),
       plotOutput("alleleTime", height="150px")
     ),
     col_widths = breakpoints(
@@ -182,17 +182,15 @@ server <- function(input, output) {
   })
   # render fitness landscape schematic:
   output$fitLand <- renderPlot({plot_schematic(w_gent())})
+  
   # render genotypes over time plot
-  ### WITH PATCHWORK: uncomment line 169 and delete lines 170-171
-  #output$genoTime <- renderPlot({ggplot_genotype_finiteANDoutcome(sims(), outcome())})
-  output$genoTime <- renderPlot({ggplot_genotype_finite(genotypes_df = sims()$genotypes,
-                                                        genotype_levels = c("aa", "Aa", "AA"))})
+  output$genoTime <- renderPlot({ggplot_genotype_finiteANDoutcome(sims(), outcome())})
+  
   # render p vs delta p plot
   output$delta_p <- renderPlot({plot_dp_by_p(delta_p(), outcome())})
+  
   # render allele frequency over time plot
-  ### WITH PATCHWORK: uncomment line 176 and delete line 177
-  #output$alleleTime <- renderPlot({ggplot_p_finiteANDoutcome(sims(), outcome())})
-  output$alleleTime <- renderPlot({ggplot_p_finite(p_df = sims()$allele)})
+  output$alleleTime <- renderPlot({ggplot_p_finiteANDoutcome(sims(), outcome())})
 }
 
 # Complete app with UI and server components

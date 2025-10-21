@@ -40,23 +40,21 @@ text_howto <- paste0("#### Slider 1. Dominance coefficient ($h$)
 
 Adjust the fitness of the heterozygotes ($Aa$ and $aA$) as follows:
 
-- set $h < 0$: heterozygotes are less fit than both homozygotes. **This is a system with two attractors.**
+- set $h < 0$: heterozygotes have lowest fitness. **This is a system with two attractors.**
 
-- set $0 \\le h \\le 0.3$: heterozygotes fitness is intermediate to homozygotes. **This is a system with one attractor.**
+- set $0 \\le h \\le 0.3$: heterozygote fitness is intermediate to homozygotes. **This is a system with one attractor.**
 
-*",html_col1,"Try sliding $h$ to see how the fitness of the heterozygotes changes on the fitness landscape (panel 1).</span>
+*",html_col1,"Slide $h$ to see how the heterozygotes' fitness changes on the fitness landscape (panel 1).</span>
 <br>What other plots or equations change with $h$?*
-
-*",html_col1,"Set $h$ above 0:</span>* $A$ always fixes because this is a system with only one attractor.
 
 #### Slider 2. Initial allele frequency ($p_0$)
 
 Adjust the fraction of invasive $AA$ individuals that are introduced into the local $aa$ population at the start of the simulation.
 
-*",html_col1,"Try sliding $p_0$ to see how the genotype frequencies change over time (panel 3).</span>
+*",html_col1,"Slide $p_0$ to see how the genotype frequencies change over time (panel 3).</span>
 <br>What other plots change with $p_0$?*
 
-",html_col1,"Set $h$ below 0 and vary $p_0$:</span> *How does the starting point change the outcome?*
+",html_col1,"Set $h < 0$ and vary $p_0$:</span> *How does the starting point change the outcome?*
 
 #### Slider 3. Number of generations
 
